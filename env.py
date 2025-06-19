@@ -8,7 +8,7 @@ class CourseSelectionEnv:
     一个模拟学生选课的强化学习环境.
     Agent需要为b门课依次出价.
     """
-    def __init__(self, num_students=100, num_courses=20, x=4, y=8, z=8):
+    def __init__(self, num_students=600, num_courses=35, x=4, y=8, z=8):
         self.num_students = num_students
         self.num_courses = num_courses
         self.course_capacity = 30

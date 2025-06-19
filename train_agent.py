@@ -24,7 +24,7 @@ def plot_all_scores(all_scores):
     plt.title('Comparison of RL Algorithms on Course Selection Task')
     plt.legend()
     plt.grid(True)
-    plt.savefig('assets/comparison_chart2.png', dpi=300)
+    plt.savefig('assets/comparison_chart3.png', dpi=300)
 
 def show_policy(agent, env, action_space=None, is_continuous=False):
     """通用策略展示函数"""
@@ -132,8 +132,8 @@ def train_ddpg(agent, env, n_episodes):
 # ==============================================================================
 if __name__ == '__main__':
     # 统一训练参数
-    N_EPISODES = 5000
-    N_EPISODES_REINFORCE = 5000 
+    N_EPISODES = 8000
+    N_EPISODES_REINFORCE = 8000 
 
     device='cuda' if torch.cuda.is_available() else 'cpu'
     seed = 42
