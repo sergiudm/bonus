@@ -132,8 +132,8 @@ def train_ddpg(agent, env, n_episodes):
 # ==============================================================================
 if __name__ == '__main__':
     # 统一训练参数
-    N_EPISODES = 8000
-    N_EPISODES_REINFORCE = 10000 
+    N_EPISODES = 5000
+    N_EPISODES_REINFORCE = 5000 
 
     device='cuda' if torch.cuda.is_available() else 'cpu'
     seed = 42
