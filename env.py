@@ -6,9 +6,9 @@ from collections import defaultdict
 class CourseSelectionEnv:
     """
     一个模拟学生选课的强化学习环境.
-    Agent需要为b门课依次出价.
+    Agent需要为b门课依次出积分.
     """
-    def __init__(self, num_students=600, num_courses=35, x=4, y=8, z=8):
+    def __init__(self, num_students=600, num_courses=25, x=4, y=8, z=8):
         self.num_students = num_students
         self.num_courses = num_courses
         self.course_capacity = 30
@@ -123,12 +123,12 @@ class CourseSelectionEnv:
         total_reward = 0.0
         for course_id in agent_successful_courses:
             pref_type = self.pref_map[course_id]
-            if pref_type == 2: total_reward += 35.0 # 最喜欢
-            elif pref_type == 1: total_reward += 7.0 # 中等
-            else: total_reward += 2.0 # 不喜欢
+            if pref_type == 2: total_reward += 85.0 # 最喜欢
+            elif pref_type == 1: total_reward += 17.0 # 中等
+            else: total_reward += 9.0 # 不喜欢
 
         failed_bids_count = len(self.agent_bids) - len(agent_successful_courses)
-        total_reward -= failed_bids_count * 1.0 # 惩罚浪费的积分
+        total_reward -= failed_bids_count * 2.0 # 惩罚浪费的积分
 
         return total_reward
     

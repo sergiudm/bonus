@@ -1,4 +1,5 @@
 from collections import deque
+import os 
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -24,14 +25,33 @@ def plot_all_scores(all_scores):
     plt.title('Comparison of RL Algorithms on Course Selection Task')
     plt.legend()
     plt.grid(True)
-    plt.savefig('assets/comparison_chart4.png', dpi=300)
+    plt.savefig('assets/comparison_chart5.png', dpi=300)
 
-def show_policy(agent, env, action_space=None, is_continuous=False, outputdir='results'):
-    """通用策略展示函数"""
+def show_policy(agent, env, action_space=None, is_continuous=False, output_dir='results'):
+    """
+    通用策略展示函数，将结果以Markdown表格形式保存到文件中。
+    """
+    # 确保输出目录存在
+    os.makedirs(output_dir, exist_ok=True)
+    
     agent_type = type(agent).__name__
-    print("\n" + "="*60)
-    print(f"      展示 {agent_type} 学到的最优选课策略")
-    print("="*60)
+    filepath = os.path.join(output_dir, f"{agent_type}_policy.md")
+    
+    # 使用一个列表来缓存Markdown输出
+    md_output = []
+
+    # 1. 添加主标题和描述信息
+    md_output.append(f"# {agent_type} 最优选课策略\n\n")
+    md_output.append("该文件展示了经过训练的Agent在面对所有课程时，所做出的最优出价决策。\n\n")
+    md_output.append("### Agent的课程偏好分布\n")
+    md_output.append(f"- **最喜欢**: `{env.preferences['most_liked']}`\n")
+    md_output.append(f"- **中等喜好**: `{env.preferences['medium_liked']}`\n")
+    md_output.append(f"- **不喜欢**: `{env.preferences['disliked']}`\n\n")
+    
+    # 2. 创建Markdown表格的表头
+    md_output.append("### 详细决策过程\n\n")
+    md_output.append("| 课程 ID | 课程类型 | 决策时剩余积分 | Agent决策 (出价) |\n")
+    md_output.append("|:---:|:---:|:---:|:---:|\n")
     
     # 将模型设置为评估模式
     if hasattr(agent, 'qnetwork_local'): agent.qnetwork_local.eval()
@@ -43,26 +63,29 @@ def show_policy(agent, env, action_space=None, is_continuous=False, outputdir='r
     with torch.no_grad():
         for i in range(env.num_courses):
             if is_continuous:
-                bid_amount = agent.act(state, noise=0)[0] # 确定性动作, 无噪声
+                bid_amount = agent.act(state, noise=0)[0] 
             else:
-                # REINFORCE/A2C在评估时也应采取最可能的动作，而不是采样
                 if agent_type in ['ReinforceAgent', 'A2CAgent']:
                     state_tensor = torch.from_numpy(state).float().unsqueeze(0).to(agent.device)
                     probs = agent.policy(state_tensor) if hasattr(agent, 'policy') else agent.actor(state_tensor)
                     action_index = torch.argmax(probs).item()
-                else: # DQN
+                else:
                     action_index = agent.act(state, eps=0.0)
                 bid_amount = action_space[action_index]
 
             if bid_amount > env.remaining_points: bid_amount = 0
             
-            course_id, pref_type = env.current_course_index, env.pref_map[env.current_course_index]
+            # 准备表格行所需的数据
+            course_id = env.current_course_index
+            remaining_points_before_bid = env.remaining_points
+            pref_type = env.pref_map[course_id]
             pref_map_str = {2: "最喜欢", 1: "中等喜好", 0: "不喜欢"}
             bid_str = f"{bid_amount:.2f}" if is_continuous else f"{bid_amount}"
             
-            print(f"课程 {course_id:<2} (类型: {pref_map_str[pref_type]:<6}) | "
-                  f"剩余积分: {env.remaining_points:<3} | "
-                  f"Agent决策: 出价 {bid_str:<5} 分")
+            # 3. 将决策结果格式化为Markdown表格的一行并添加到列表中
+            md_output.append(f"| {course_id} | {pref_map_str[pref_type]} | {remaining_points_before_bid} | **{bid_str}** |\n")
+            
+            # 更新状态
             state, _, _, _ = env.step(bid_amount)
             
     # 将模型恢复为训练模式
@@ -70,6 +93,14 @@ def show_policy(agent, env, action_space=None, is_continuous=False, outputdir='r
     if hasattr(agent, 'policy'): agent.policy.train()
     if hasattr(agent, 'actor'): agent.actor.train()
     if hasattr(agent, 'actor_local'): agent.actor_local.train()
+
+    # 4. 将列表中的所有内容写入文件
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.writelines(md_output)
+        print(f"策略已保存至: {filepath}")
+    except IOError as e:
+        print(f"错误：无法写入文件 {filepath}。原因: {e}")
 
 
 ### --- Training Loops (Unchanged) ---
@@ -132,8 +163,8 @@ def train_ddpg(agent, env, n_episodes):
 # ==============================================================================
 if __name__ == '__main__':
     # 统一训练参数
-    N_EPISODES = 8000
-    N_EPISODES_REINFORCE = 8000 
+    N_EPISODES = 6000
+    N_EPISODES_REINFORCE = 6000 
 
     device='cuda' if torch.cuda.is_available() else 'cpu'
     seed = 42
