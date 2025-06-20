@@ -123,7 +123,7 @@ class CourseSelectionEnv:
         total_reward = 0.0
         for course_id in agent_successful_courses:
             pref_type = self.pref_map[course_id]
-            if pref_type == 2: total_reward += 15.0 # 最喜欢
+            if pref_type == 2: total_reward += 35.0 # 最喜欢
             elif pref_type == 1: total_reward += 7.0 # 中等
             else: total_reward += 2.0 # 不喜欢
 

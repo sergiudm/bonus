@@ -24,9 +24,9 @@ def plot_all_scores(all_scores):
     plt.title('Comparison of RL Algorithms on Course Selection Task')
     plt.legend()
     plt.grid(True)
-    plt.savefig('assets/comparison_chart3.png', dpi=300)
+    plt.savefig('assets/comparison_chart4.png', dpi=300)
 
-def show_policy(agent, env, action_space=None, is_continuous=False):
+def show_policy(agent, env, action_space=None, is_continuous=False, outputdir='results'):
     """通用策略展示函数"""
     agent_type = type(agent).__name__
     print("\n" + "="*60)
